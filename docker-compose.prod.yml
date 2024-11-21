@@ -1,0 +1,32 @@
+services:
+  rvthn3-db:
+    image: postgis/postgis:13-master
+    container_name: rvthn3_db
+    ports:
+      - ${DB_DUMP_PORT}:5473
+    platform: linux/amd64
+    volumes:
+      - ./data/db:/var/lib/postgresql/data
+    environment:
+      POSTGRES_DB: ${DB_DATABASE}
+      POSTGRES_USER: ${DB_USER}
+      POSTGRES_PASSWORD: ${DB_PASSWORD}
+
+  rvthn3-cache:
+    image: redis:6.2.16
+    container_name: rvthn3_cache
+
+  rvthn3-directus:
+    image: directus/directus:11.1.0
+    container_name: rvthn3_directus
+    ports:
+      - ${PORT_EXTERNAL}:${PORT}
+    volumes:
+      - ./uploads:/directus/uploads
+      - ./extensions:/directus/extensions
+      - ./snapshots:/directus/snapshots
+    depends_on:
+      - rvthn3-db
+      - rvthn3-cache
+    env_file:
+      - .env.prod
